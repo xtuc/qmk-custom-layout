@@ -55,7 +55,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
    * |------+------+------+------+------+------|------+------+------+------+------+------|
    * | Shift|   W  |   X  |   C  |   V  |   B  |   N  |   M  |   ,  |   .  |   /  |ENTER |
    * |------+------+------+------+------+------+------+------+------+------+------+------|
-   * |  FN  | Ctrl | FN2  | ALT  | LGUI |     SPCE    | AltGr| RGUI |      |      | FN2  |
+   * | Ctrl |  FN  | FN2  | LGUI  | ALT |     SPCE    | AltGr| RGUI |      |      | FN2  |
    * `-----------------------------------------------------------------------------------'
    */
   [_QWERTY] = {
@@ -63,7 +63,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     {KC_TAB,  FR_A,    FR_Z,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    FR_CIRC },
     {KC_ESC, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT },
     {KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_ENT },
-    {FN, KC_LCTL, FN2,  KC_LALT,KC_LGUI, KC_SPC, KC_SPC, CU_ALGR,  KC_RGUI, _______, _______, FN2 }
+    {KC_LCTL, FN, FN2, KC_LGUI, KC_LALT, KC_SPC, KC_SPC, CU_ALGR,  KC_RGUI, _______, _______, FN2 }
   },
 
   /* FN
