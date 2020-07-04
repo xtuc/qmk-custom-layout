@@ -1,11 +1,3 @@
-#include "preonic.h"
-#include "action_layer.h"
-#include "print.h"
-#include "eeconfig.h"
-#ifdef AUDIO_ENABLE
-#include "audio.h"
-#endif
-
 #include "keymap_french.h"
 
 #ifndef ALTGR
@@ -26,9 +18,11 @@
 // entirely and just use numbers.
 /* #define _QWERTY 1 */
 /* #define _FN 0 */
+#include QMK_KEYBOARD_H
+#include "muse.h"
 
 enum preonic_layers {
-  _QWERTY = 1,
+  _QWERTY,
   _FN,
   _FN2
 };
@@ -39,74 +33,72 @@ enum preonic_keycodes {
   FN2
 };
 
-// Fillers to make layering more clear
-#define _______ KC_TRNS
-#define XXXXXXX KC_NO
+#define _ _______
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
-  /* Azerty
-   * ,-----------------------------------------------------------------------------------.
-   * |   =  |   1  |   2  |   3  |   4  |   5  |   6  |   7  |   8  |   9  |   0  | BACK |
-   * |------+------+------+------+------+------+------+------+------+------+------+------|
-   * | Tab  |   A  |   Z  |   E  |   R  |   T  |   Y  |   U  |   I  |   O  |   P  |  ^   |
-   * |------+------+------+------+------+-------------+------+------+------+------+------|
-   * | ESC  |   Q  |   S  |   D  |   F  |   G  |   H  |   J  |   K  |   L  |   ;  |  "   |
-   * |------+------+------+------+------+------|------+------+------+------+------+------|
-   * | Shift|   W  |   X  |   C  |   V  |   B  |   N  |   M  |   ,  |   .  |   /  |ENTER |
-   * |------+------+------+------+------+------+------+------+------+------+------+------|
-   * | Ctrl |  FN  | FN2  | LGUI  | ALT |     SPCE    | AltGr| RGUI |      |      | FN2  |
-   * `-----------------------------------------------------------------------------------'
-   */
-  [_QWERTY] = {
-    {FR_EQL, KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_BSPC },
-    {KC_TAB,  FR_A,    FR_Z,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    FR_CIRC },
-    {KC_ESC, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT },
-    {KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_ENT },
-    {KC_LCTL, FN, FN2, KC_LGUI, KC_LALT, KC_SPC, KC_SPC, CU_ALGR,  KC_RGUI, _______, _______, FN2 }
-  },
+/* Azerty
+ * ,-----------------------------------------------------------------------------------.
+ * |   =  |   1  |   2  |   3  |   4  |   5  |   6  |   7  |   8  |   9  |   0  | BACK |
+ * |------+------+------+------+------+------+------+------+------+------+------+------|
+ * | Tab  |   A  |   Z  |   E  |   R  |   T  |   Y  |   U  |   I  |   O  |   P  |  $   |
+ * |------+------+------+------+------+-------------+------+------+------+------+------|
+ * | ESC  |   Q  |   S  |   D  |   F  |   G  |   H  |   J  |   K  |   L  |   ;  |  "   |
+ * |------+------+------+------+------+------|------+------+------+------+------+------|
+ * | Shift|   W  |   X  |   C  |   V  |   B  |   N  |   M  |   ,  |   .  |   /  |ENTER |
+ * |------+------+------+------+------+------+------+------+------+------+------+------|
+ * | Ctrl |  FN  | FN2  | LGUI  | ALT |     SPCE    | AltGr| RGUI |      |      | FN2  |
+ * `-----------------------------------------------------------------------------------'
+ */
+[_QWERTY] = LAYOUT_preonic_grid( \
+  FR_EQL, KC_1, KC_2, KC_3, KC_4, KC_5, KC_6, KC_7, KC_8, KC_9, KC_0, KC_BSPC, \
+  KC_TAB, FR_A, FR_Z, KC_E, KC_R, KC_T, KC_Y, KC_U, KC_I, KC_O, KC_P, FR_DLR, \
+  KC_ESC, KC_A, KC_S, KC_D, KC_F, KC_G, KC_H, KC_J, KC_K, KC_L, KC_SCLN, KC_QUOT, \
+  KC_LSFT, KC_Z, KC_X, KC_C, KC_V, KC_B, KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, KC_ENT, \
+  KC_LCTL, FN, FN2, KC_LGUI, KC_LALT, KC_SPC, KC_SPC, CU_ALGR, KC_RGUI, _, _, FN2\
+),
 
-  /* FN
-   * ,-----------------------------------------------------------------------------------.
-   * |      |  F1  |  F2  |  F3  |  F4  |  F5  |  F6  |  F7  |  F8  |  F9  |  F10 |  DEL |
-   * |------+------+------+------+------+-------------+------+------+------+------+------|
-   * |      |  F11 |  F12 |  F13 |  F14 |  F15 |  F16 |  F17 |  F18 |  F19 |  F20 |   $  |
-   * |------+------+------+------+------+-------------+------+------+------+------+------|
-   * |      | VOL- | VOL+ | MUTE |BLtogg|      | LEFT | DOWN |  UP  | RGHT |      |   *  |
-   * |------+------+------+------+------+------|------+------+------+------+------+------|
-   * |      | BL-  | BL+  |Aud on|AudOff|AGnorm|AGswap|      |      |      |      |      |
-   * |------+------+------+------+------+------|------+------+------+------+------+------|
-   * |      |      |      |Mus on|MusOff|      |      |PLY/PS|      | PREV | NEXT |      |
-   * `-----------------------------------------------------------------------------------'
-   */
-  [_FN] = {
-    {RESET, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_DEL },
-    {_______, KC_F11,  KC_F12,  KC_F13,  KC_F14,  KC_F15,  KC_F16,  KC_F17,  KC_F18,  KC_F19,  KC_F20,  FR_DLR },
-    {_______, KC_VOLD, KC_VOLU, KC_MUTE, BL_TOGG, _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, XXXXXXX, CU_ASTR },
-    {_______, BL_DEC,  BL_INC,  AU_ON,   AU_OFF,  AG_NORM, AG_SWAP, _______, _______, _______, _______, _______ },
-    {_______,  _______,  _______,  MU_ON,   MU_OFF,  _______, _______, KC_MPLY, _______, KC_MPRV, KC_MNXT, _______ }
-  },
+/* FN
+ * ,-----------------------------------------------------------------------------------.
+ * |      |  F1  |  F2  |  F3  |  F4  |  F5  |  F6  |  F7  |  F8  |  F9  |  F10 |  DEL |
+ * |------+------+------+------+------+-------------+------+------+------+------+------|
+ * |      |  F11 |  F12 |  F13 |  F14 |  F15 |  F16 |  F17 |  F18 |  F19 |  F20 |   $  |
+ * |------+------+------+------+------+-------------+------+------+------+------+------|
+ * |      | VOL- | VOL+ | MUTE |BLtogg|      | LEFT | DOWN |  UP  | RGHT |      |   *  |
+ * |------+------+------+------+------+------|------+------+------+------+------+------|
+ * |      | BL-  | BL+  |Aud on|AudOff|AGnorm|AGswap|      |      |      |      |      |
+ * |------+------+------+------+------+------|------+------+------+------+------+------|
+ * |      |      |      |Mus on|MusOff|      |      |PLY/PS|      | PREV | NEXT |      |
+ * `-----------------------------------------------------------------------------------'
+ */
+[_FN] = LAYOUT_preonic_grid(\
+RESET, KC_F1, KC_F2, KC_F3, KC_F4, KC_F5, KC_F6, KC_F7, KC_F8, KC_F9, KC_F10, KC_DEL, \
+_, KC_F11, KC_F12, KC_F13, KC_F14, KC_F15, KC_F16, KC_F17, KC_F18, KC_F19, KC_F20, FR_DLR, \
+_, KC_VOLD, KC_VOLU, KC_MUTE, BL_TOGG, _, KC_LEFT, KC_DOWN, KC_UP, KC_RGHT, _, CU_ASTR, \
+_, _, _, _, _, _, _, _, _, _, _, _, \
+_, _, _, _, _, _, _, KC_MPLY, _, KC_MPRV, KC_MNXT, _\
+),
 
-  /* FN 2
-   * ,-----------------------------------------------------------------------------------.
-   * |   ~  |   !  |   @  |   #  |   %  |   <  |   >  |   &  |   *  |   (  |   )  |  |   |
-   * |------+------+------+------+------+-------------+------+------+------+------+------|
-   * |   ~  |   !  |   @  |   #  |   %  |   <  |   >  |   &  |   *  |   (  |   )  |  |   |
-   * |------+------+------+------+------+-------------+------+------+------+------+------|
-   * |      |      |      |      |      |      |      |   _  |   +  |   {  |   }  |      |
-   * |------+------+------+------+------+------|------+------+------+------+------+------|
-   * |      |      |      |      |      |      |      |      |      |   [  |   ]  |
-   * |------+------+------+------+------+------+------+------+------+------+------+------|
-   * |      |      |      |      |      |             | Next | Vol- | Vol+ | Play |      |
-   * `-----------------------------------------------------------------------------------'
-   */
-  [_FN2] = {
-    {FR_TILD, FR_EXLM, FR_AT,   FR_HASH, FR_DLR,  FR_PERC, FR_LESS, FR_GRTR, CU_ASTR, FR_LPRN, FR_RPRN, FR_PIPE},
-    {FR_TILD, FR_EXLM, FR_AT,   FR_HASH, FR_DLR,  FR_PERC, FR_LESS, FR_GRTR, CU_ASTR, FR_LPRN, FR_RPRN, FR_PIPE},
-    {_______,  _______,   _______,   _______,   _______,   _______,  _______,  KC_UNDS, KC_PLUS, FR_LCBR, FR_RCBR, _______},
-    {_______, _______,   _______,   _______,   _______,  _______,  _______, _______, _______, BP_RBRC, FR_RBRC, _______},
-    {_______, _______, _______, _______, _______, _______, _______, KC_MNXT, KC_VOLD, KC_VOLU, KC_MPLY, _______}
-  },
+/* FN 2
+ * ,-----------------------------------------------------------------------------------.
+ * |   ~  |   !  |   @  |   #  |   %  |   <  |   >  |   &  |   *  |   (  |   )  |  |   |
+ * |------+------+------+------+------+-------------+------+------+------+------+------|
+ * |   ~  |   !  |   @  |   #  |   %  |   <  |   >  |   &  |   *  |   (  |   )  |  |   |
+ * |------+------+------+------+------+-------------+------+------+------+------+------|
+ * |      |      |      |      |      |      |      |   _  |   +  |   {  |   }  |      |
+ * |------+------+------+------+------+------|------+------+------+------+------+------|
+ * |      |      |      |      |      |      |      |      |      |   [  |   ]  |
+ * |------+------+------+------+------+------+------+------+------+------+------+------|
+ * |      |      |      |      |      |             | Next | Vol- | Vol+ | Play |      |
+ * `-----------------------------------------------------------------------------------'
+ */
+[_FN2] = LAYOUT_preonic_grid(\
+FR_TILD, FR_EXLM, FR_AT, FR_HASH, FR_DLR, FR_PERC, FR_LESS, FR_GRTR, CU_ASTR, FR_LPRN, FR_RPRN, FR_PIPE, \
+FR_TILD, FR_EXLM, FR_AT, FR_HASH, FR_DLR, FR_PERC, FR_LESS, FR_GRTR, CU_ASTR, FR_LPRN, FR_RPRN, FR_PIPE, \
+_, _, _, _, _, _, _, KC_UNDS, KC_PLUS, FR_LCBR, FR_RCBR, _, \
+_, _, _, _, _, _, _, _, _, BP_RBRC, FR_RBRC, _, \
+_, _, _, _, _, _, _, KC_MNXT, KC_VOLD, KC_VOLU, KC_MPLY, _\
+),
 
 };
 
@@ -126,7 +118,6 @@ void persistant_default_layer_set(uint16_t default_layer) {
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-  print_val_dec(keycode);
   switch (keycode) {
 
     case FN:
@@ -162,12 +153,12 @@ void matrix_init_user(void) {
 void startup_user()
 {
   _delay_ms(20); // gets rid of tick
-  PLAY_NOTE_ARRAY(tone_startup, false, 0);
+  PLAY_SONG(tone_startup);
 }
 
 void shutdown_user()
 {
-  PLAY_NOTE_ARRAY(tone_goodbye, false, 0);
+  PLAY_SONG(tone_goodbye);
   _delay_ms(150);
   stop_all_notes();
 }
@@ -179,7 +170,7 @@ void music_on_user(void)
 
 void music_scale_user(void)
 {
-  PLAY_NOTE_ARRAY(music_scale, false, 0);
+  PLAY_SONG(music_scale);
 }
 
 
